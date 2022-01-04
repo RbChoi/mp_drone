@@ -191,5 +191,4 @@ def index():
 
 if __name__ == '__main__':
     # orginal
-    application.debug = True
-    application.run()
+    application.run(host='0.0.0.0', debug=True)
