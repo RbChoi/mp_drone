@@ -75,7 +75,7 @@ def main():
     # tello.streamon()
 
     # cap = tello.get_frame_read()
-    cap = cv.VideoCapture(0)
+    cap = cv.VideoCapture(1)
 
     # Init Tello Controllers
     # gesture_controller = TelloGestureController(tello)
@@ -190,4 +190,4 @@ def index():
 
 if __name__ == '__main__':
     # orginal
-    application.run(debug=True)
+    application.run(host='0.0.0.0', debug=True)
