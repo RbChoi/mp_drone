@@ -1,25 +1,56 @@
+
 <!DOCTYPE html>
 <html>
     <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap" rel="stylesheet">
         <style>
             #titleheader {
-                align-items: center;
-                height:250px;
+                text-align: center;
+                font-weight: 600;
+                margin-top: 20px;
+                margin-bottom: 20px;
+                padding: 20px;
             }
             #vidcontainer {
+                text-align: center;
+                display: flex;
+                flex-direction: column;
                 align-items: center;
             }
+
+            .footer {
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;;
+                padding: 10px;
+                width: 100%;
+                font-family: 'Nanum Gothic', sans-serif;;
+            }
         </style>
-        <h1>Live streaming</h1>
+        <div id="titleheader">
+            <img style="width: auto; height: 80px;" src = "{{ url_for('static', filename='tom.png') }}">
+            <img style="max-width: 20%; height: auto;"
+            src = "{{ url_for('static', filename='logowhite.png') }}">
+            <img style="width: auth; max-height: 80px;" src = "{{ url_for('static', filename='alan.png') }}">
+            <br>
+            
     </head>
 
-  <body>
-
-    <div id = "container">
-        <img src="{{ url_for('video') }}" width="50%"/>
+  <body style="  background-color: #1f1e1e">
+    
+    <div style="text-align: center; vertical-align: top; padding: 5px; margin:10px;">
+        <p style="font-family: 'Nanum Gothic', sans-serif; color:rgb(241, 236, 228)">손을 카메라에 인식시켜주세요.</p>
+        <img src="{{ url_for('video') }}" width=auto/>
     </div>
-
+            
     </body>
 
+    <footer class="footer">
+        <p style="color:white">XXKD</p>
+    </footer>
 
-</html>
+
+</html> 

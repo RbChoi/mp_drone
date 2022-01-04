@@ -162,8 +162,7 @@ def main():
             break
         else:
             # Battery status and image rendering
-            cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),
-                       cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
             ret, buffer = cv.imencode('.jpg', debug_image)
             debug_image = buffer.tobytes()
@@ -191,4 +190,4 @@ def index():
 
 if __name__ == '__main__':
     # orginal
-    application.run(host='0.0.0.0', debug=True)
+    application.run(debug=True)
