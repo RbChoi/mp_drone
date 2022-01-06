@@ -19,7 +19,7 @@ CORS(application)
 
 
 def get_args():
-    # print('## Reading configuration ##')
+    print('## Reading configuration ##')
     parser = configargparse.ArgParser(default_config_files=['config.txt'])
 
     parser.add('-c', '--my-config', required=False, is_config_file=True, help='config file path')
@@ -56,7 +56,7 @@ def select_mode(key, mode):
     return number, mode
 
 
-@application.route('/main')
+#@application.route('/main')
 def main():
     # init global vars
     global gesture_buffer
@@ -70,22 +70,22 @@ def main():
     in_flight = False
 
     # Camera preparation
-    # tello = Tello()
-    # tello.connect()
-    # tello.streamon()
+    tello = Tello()
+    tello.connect()
+    tello.streamon()
 
-    # cap = tello.get_frame_read()
-    cap = cv.VideoCapture(1)
+    cap = tello.get_frame_read()
+    #cap = cv.VideoCapture(1)
 
     # Init Tello Controllers
-    # gesture_controller = TelloGestureController(tello)
-    # keyboard_controller = TelloKeyboardController(tello)
+    gesture_controller = TelloGestureController(tello)
+    keyboard_controller = TelloKeyboardController(tello)
 
     gesture_detector = GestureRecognition(args.use_static_image_mode, args.min_detection_confidence,
                                           args.min_tracking_confidence)
     gesture_buffer = GestureBuffer(buffer_len=args.buffer_len)
 
-    '''
+    
     def tello_control(key, keyboard_controller, gesture_controller):
         global gesture_buffer
 
@@ -100,7 +100,6 @@ def main():
             battery_status = tello.get_battery()[:-2]
         except:
             battery_status = -1
-'''
 
     # FPS Measurement
     cv_fps_calc = CvFpsCalc(buffer_len=10)
@@ -133,7 +132,8 @@ def main():
             mode = 0
             KEYBOARD_CONTROL = True
             WRITE_CONTROL = False
-            # tello.send_rc_control(0, 0, 0, 0)  # Stop moving
+            tello.send_rc_control(0, 0, 0, 0)  # Stop moving
+
         elif key == ord('g'):
             KEYBOARD_CONTROL = False
         elif key == ord('n'):
@@ -147,36 +147,42 @@ def main():
                 number = key - 48
 
         # Camera capture
-        success, image = cap.read()
+        image = cap.frame
+
+        #in web
+        #success, image = cap.read()
 
         debug_image, gesture_id = gesture_detector.recognize(image, number, mode)
         gesture_buffer.add_gesture(gesture_id)
 
         # Start control thread
-        # threading.Thread(target=tello_control, args=(key, keyboard_controller, gesture_controller,)).start()
-        # threading.Thread(target=tello_battery, args=(tello,)).start()
+        threading.Thread(target=tello_control, args=(key, keyboard_controller, gesture_controller,)).start()
+        threading.Thread(target=tello_battery, args=(tello,)).start()
 
         debug_image = gesture_detector.draw_info(debug_image, fps, mode, number)
 
-        if not success:
-            break
-        else:
+        #in web
+        #if not success:
+        #    break
+        #else:
             # Battery status and image rendering
             #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            ret, buffer = cv.imencode('.jpg', debug_image)
-            debug_image = buffer.tobytes()
+            #ret, buffer = cv.imencode('.jpg', debug_image)
+            #debug_image = buffer.tobytes()
 
-        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
+                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv.imshow('Tello Gesture Recognition', debug_image)
 
-        # cv.imshow('Tello Gesture Recognition', debug_image)
-
-    # tello.land()
-    # tello.end()
+    tello.land()
+    tello.end()
     cv.destroyAllWindows()
     return 'OK'
 
-
+'''
+#in web
 @application.route('/video')
 def video():
     # return Response(createThread(),mimetype='multipart/x-mixed-replace; boundary=frame')
@@ -186,8 +192,9 @@ def video():
 @application.route('/')
 def index():
     return render_template('index.html')
-
+'''
 
 if __name__ == '__main__':
-    # orginal
-    application.run(host='0.0.0.0', debug=True)
+    # in web
+    #application.run(host='0.0.0.0', debug=True)
+    main()
