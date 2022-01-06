@@ -74,6 +74,14 @@ def main():
     tello.connect()
     tello.streamon()
 
+    # for test
+    # success
+    #tello.takeoff()
+    #tello.move_up(30)
+    #tello.send_rc_control(0, 50, 0, 0)
+    #tello.send_rc_control(0,0,0,0)
+    #tello.land()
+
     cap = tello.get_frame_read()
     #cap = cv.VideoCapture(1)
 
@@ -108,8 +116,8 @@ def main():
     number = -1
     battery_status = -1
 
-    # tello.move_down(20)
-
+    tello.takeoff()
+    
     while True:
         fps = cv_fps_calc.get()
 
@@ -174,12 +182,44 @@ def main():
         #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
         cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
                    cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+        cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
+                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
         cv.imshow('Tello Gesture Recognition', debug_image)
+    
+    '''
+    tello.takeoff()
+
+    while True:
+        image = cap.frame
+        cv.imshow("drone", image)
+
+        key = cv.waitKey(1) & 0xff
+        if key == 27:
+            break
+        elif key == ord('w'):
+            tello.move_forward(30)
+        elif key == ord('s'):
+            tello.move_back(30)
+        elif key == ord('a'):
+            tello.move_left(30)
+        elif key == ord('d'):
+            tello.move_right(30)
+        elif key == ord('e'):
+            tello.rotate_clockwise(30)
+        elif key == ord('q'):
+            tello.rotate_counter_clockwise(30)
+        elif key == ord('r'):
+            tello.move_up(30)
+        elif key == ord('f'):
+            tello.move_down(30)
+            '''
 
     tello.land()
     tello.end()
     cv.destroyAllWindows()
-    return 'OK'
+    #return 'OK'
 
 '''
 #in web
