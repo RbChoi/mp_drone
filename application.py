@@ -1,25 +1,27 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import configargparse
-from flask import Flask, url_for, request, render_template, Response
+#from flask import Flask, url_for, request, render_template, Response
 from flask_cors import CORS
 
 import cv2 as cv
 
+from gestures import GestureRecognition, GestureBuffer
 from gestures.tello_gesture_controller import TelloGestureController
+from gestures.tello_keyboard_controller import TelloKeyboardController
 from utils import CvFpsCalc
 
 from djitellopy import Tello
-from gestures import *
+#from gestures import *
 
 import threading
 
-application = Flask(__name__)
-CORS(application)
+#application = Flask(__name__)
+#CORS(application)
 
 
 def get_args():
-    # print('## Reading configuration ##')
+    print('## Reading configuration ##')
     parser = configargparse.ArgParser(default_config_files=['config.txt'])
 
     parser.add('-c', '--my-config', required=False, is_config_file=True, help='config file path')
@@ -56,7 +58,7 @@ def select_mode(key, mode):
     return number, mode
 
 
-@application.route('/main')
+#@application.route('/main')
 def main():
     # init global vars
     global gesture_buffer
@@ -70,22 +72,26 @@ def main():
     in_flight = False
 
     # Camera preparation
-    # tello = Tello()
-    # tello.connect()
-    # tello.streamon()
+    tello = Tello()
+    tello.connect()
+    tello.streamon()
+    print(tello.get_battery())
+    #add
+    #tello.takeoff()
+    #tello.move_left(100)
 
-    # cap = tello.get_frame_read()
-    cap = cv.VideoCapture(1)
+    cap = tello.get_frame_read()
+    #cap = cv.VideoCapture(0)
 
     # Init Tello Controllers
-    # gesture_controller = TelloGestureController(tello)
-    # keyboard_controller = TelloKeyboardController(tello)
+    gesture_controller = TelloGestureController(tello)
+    keyboard_controller = TelloKeyboardController(tello)
 
     gesture_detector = GestureRecognition(args.use_static_image_mode, args.min_detection_confidence,
                                           args.min_tracking_confidence)
     gesture_buffer = GestureBuffer(buffer_len=args.buffer_len)
 
-    '''
+
     def tello_control(key, keyboard_controller, gesture_controller):
         global gesture_buffer
 
@@ -100,7 +106,14 @@ def main():
             battery_status = tello.get_battery()[:-2]
         except:
             battery_status = -1
-'''
+
+    def tello_speed(tello):
+        global speed_status
+        try:
+            speed_status = tello.get_speed()
+        except:
+            speed_status = -1
+
 
     # FPS Measurement
     cv_fps_calc = CvFpsCalc(buffer_len=10)
@@ -108,32 +121,34 @@ def main():
     mode = 0
     number = -1
     battery_status = -1
+    speed_status = -1
 
-    # tello.move_down(20)
+    #tello.move_down(20)
 
     while True:
         fps = cv_fps_calc.get()
 
         # Process Key (ESC: end)
         key = cv.waitKey(1) & 0xff
+
         if key == 27:  # ESC
             break
         elif key == 32:  # Space
             if not in_flight:
                 # Take-off drone
-                # tello.takeoff()
+                tello.takeoff()
                 in_flight = True
 
             elif in_flight:
                 # Land tello
-                # tello.land()
+                tello.land()
                 in_flight = False
 
         elif key == ord('k'):
             mode = 0
             KEYBOARD_CONTROL = True
             WRITE_CONTROL = False
-            # tello.send_rc_control(0, 0, 0, 0)  # Stop moving
+            tello.send_rc_control(0, 0, 0, 0)  # Stop moving
         elif key == ord('g'):
             KEYBOARD_CONTROL = False
         elif key == ord('n'):
@@ -147,47 +162,55 @@ def main():
                 number = key - 48
 
         # Camera capture
-        success, image = cap.read()
+        #success, image = cap.read()
+        image = cap.frame
 
         debug_image, gesture_id = gesture_detector.recognize(image, number, mode)
         gesture_buffer.add_gesture(gesture_id)
 
         # Start control thread
-        # threading.Thread(target=tello_control, args=(key, keyboard_controller, gesture_controller,)).start()
-        # threading.Thread(target=tello_battery, args=(tello,)).start()
+        threading.Thread(target=tello_control, args=(key, keyboard_controller, gesture_controller,)).start()
+        threading.Thread(target=tello_battery, args=(tello,)).start()
 
         debug_image = gesture_detector.draw_info(debug_image, fps, mode, number)
 
-        if not success:
-            break
-        else:
+        #if not success:
+            #break
+        #else:
             # Battery status and image rendering
             #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            ret, buffer = cv.imencode('.jpg', debug_image)
-            debug_image = buffer.tobytes()
+            #ret, buffer = cv.imencode('.jpg', debug_image)
+            #debug_image = buffer.tobytes()
 
-        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
 
         # cv.imshow('Tello Gesture Recognition', debug_image)
+        cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),
+                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv.putText(debug_image, "Speed: {}".format(speed_status), (5, 720 - 40),
+                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+        cv.imshow('Tello Gesture Recognition', debug_image)
 
-    # tello.land()
-    # tello.end()
+    tello.land()
+    tello.end()
     cv.destroyAllWindows()
     return 'OK'
 
 
-@application.route('/video')
-def video():
+#@application.route('/video')
+#def video():
     # return Response(createThread(),mimetype='multipart/x-mixed-replace; boundary=frame')
-    return Response(main(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    #return Response(main(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@application.route('/')
-def index():
-    return render_template('index.html')
+#@application.route('/')
+#def index():
+    #return render_template('index.html')
 
 
 if __name__ == '__main__':
     # orginal
-    application.run(host='0.0.0.0', debug=True)
+
+    #application.run( debug=True)
+    main()

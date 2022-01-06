@@ -14,7 +14,12 @@ import mediapipe as mp
 from utils import CvFpsCalc
 from model import KeyPointClassifier
 from model import PointHistoryClassifier
+#esp
+#import socket
 
+#esp8266에 접속 후 ipconfig 명령을 통해 알아낸 게이트웨이의 주소를 입력
+#HOST = ''
+#PORT = 1234
 
 class GestureRecognition:
     def __init__(self, use_static_image_mode=False, min_detection_confidence=0.7, min_tracking_confidence=0.7,
@@ -449,15 +454,26 @@ class GestureRecognition:
 
     def _draw_info_text(self, image, brect, handedness, hand_sign_text,
                         finger_gesture_text):
+        #s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        #s.bind(("127.0.0.1", 2204))
+        # 사용중이 아닌 포드만 사용 가능
+
         cv.rectangle(image, (brect[0], brect[1]), (brect[2], brect[1] - 22),
                      (0, 0, 0), -1)
 
         info_text = handedness.classification[0].label[0:]
         if hand_sign_text != "":
             info_text = info_text + ':' + hand_sign_text
-            print("ouput: " + hand_sign_text)
+            print("output: " + hand_sign_text)
         cv.putText(image, info_text, (brect[0] + 5, brect[1] - 4),
                    cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv.LINE_AA)
+
+        #while True:
+            #1024가 뭔지 모름
+            #data, addr = s.recvfrom(1024)
+            #s.sendto(data.encode(), addr)
+
+        #s.close()
 
         # if finger_gesture_text != "":
         #     cv.putText(image, "Finger Gesture:" + finger_gesture_text, (10, 60),
