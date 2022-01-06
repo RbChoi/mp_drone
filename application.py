@@ -76,6 +76,8 @@ def main():
     tello.connect()
     tello.streamon()
 
+    #in gesture-control
+    
     # for test
     # success
     #tello.takeoff()
