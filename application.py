@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import configargparse
-#from flask import Flask, url_for, request, render_template, Response
+from flask import Flask, url_for, request, render_template, Response
 from flask_cors import CORS
 
 import cv2 as cv
@@ -16,8 +16,8 @@ from djitellopy import Tello
 
 import threading
 
-#application = Flask(__name__)
-#CORS(application)
+application = Flask(__name__)
+CORS(application)
 
 
 def get_args():
@@ -58,7 +58,7 @@ def select_mode(key, mode):
     return number, mode
 
 
-#@application.route('/main')
+@application.route('/main')
 def main():
     # init global vars
     global gesture_buffer
@@ -75,8 +75,6 @@ def main():
     tello = Tello()
     tello.connect()
     tello.streamon()
-
-    #in gesture-control
     
     # for test
     # success
@@ -86,8 +84,8 @@ def main():
     #tello.send_rc_control(0,0,0,0)
     #tello.land()
 
-    cap = tello.get_frame_read()
-    #cap = cv.VideoCapture(1)
+    #cap = tello.get_frame_read()
+    cap = cv.VideoCapture("udp://@0.0.0.0:11111")
 
     # Init Tello Controllers
     gesture_controller = TelloGestureController(tello)
@@ -160,10 +158,10 @@ def main():
                 number = key - 48
 
         # Camera capture
-        image = cap.frame
+        #image = cap.frame
 
         #in web
-        #success, image = cap.read()
+        success, image = cap.read()
 
         debug_image, gesture_id = gesture_detector.recognize(image, number, mode)
         gesture_buffer.add_gesture(gesture_id)
@@ -175,23 +173,30 @@ def main():
         debug_image = gesture_detector.draw_info(debug_image, fps, mode, number)
 
         #in web
-        #if not success:
-        #    break
-        #else:
+        if not success:
+            break
+        else:
             # Battery status and image rendering
             #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            #ret, buffer = cv.imencode('.jpg', debug_image)
-            #debug_image = buffer.tobytes()
+            #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
+                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-        #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
-        cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
-                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            #cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
+                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-        cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
-                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            ret, buffer = cv.imencode('.jpg', debug_image)
+            debug_image = buffer.tobytes()
+            cv.imshow('Tello Gesture Recognition', debug_image)
 
-        cv.imshow('Tello Gesture Recognition', debug_image)
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
+                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+        #cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
+                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+
+        #cv.imshow('Tello Gesture Recognition', debug_image)
     
     '''
     tello.takeoff()
@@ -224,22 +229,22 @@ def main():
     tello.land()
     tello.end()
     cv.destroyAllWindows()
-    #return 'OK'
+    return 'OK'
 
-'''
+
 #in web
 @application.route('/video')
 def video():
     # return Response(createThread(),mimetype='multipart/x-mixed-replace; boundary=frame')
-    #return Response(main(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(main(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @application.route('/')
 def index():
     return render_template('index.html')
-'''
+
 
 if __name__ == '__main__':
     # in web
-    #application.run(host='0.0.0.0', debug=True)
-    main()
+    application.run(host='0.0.0.0', port=2204, debug=False)
+    #main()
