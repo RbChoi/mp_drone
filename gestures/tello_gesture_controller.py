@@ -16,8 +16,8 @@ class TelloGestureController:
         print("GESTURE", gesture_id)
 
 
-        if gesture_id == 2:
-            self.up_down_velocity = 25
+        #if gesture_id == 2:
+            #self.up_down_velocity = 25
             #self.tello.move_up(30)
 
         if not self._is_landing:
