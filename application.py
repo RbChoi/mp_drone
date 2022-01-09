@@ -120,7 +120,7 @@ def main():
     battery_status = -1
     speed_status = -1
 
-    tello.takeoff()
+    #tello.takeoff()
     
     while True:
         fps = cv_fps_calc.get()
@@ -174,23 +174,20 @@ def main():
         debug_image = gesture_detector.draw_info(debug_image, fps, mode, number)
 
         #in web
-        #if not success:
-        #    break
-        #else:
+        if not success:
+            break
+        else:
             # Battery status and image rendering
-            #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            
 
-            #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
-                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
+                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            #cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
-                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-            #ret, buffer = cv.imencode('.jpg', debug_image)
-            #debug_image = buffer.tobytes()
+            ret, buffer = cv.imencode('.jpg', debug_image)
+            debug_image = buffer.tobytes()
             #cv.imshow('Tello Gesture Recognition', debug_image)
 
-        #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
         #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
                    #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
@@ -199,38 +196,10 @@ def main():
 
         #cv.imshow('Tello Gesture Recognition', debug_image)
         #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
-        cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
-                   cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+        #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
+                   #cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
 
-        cv.imshow('XXKD\'s DoDrone', debug_image)
-    
-    '''
-    tello.takeoff()
-
-    while True:
-        image = cap.frame
-        cv.imshow("drone", image)
-
-        key = cv.waitKey(1) & 0xff
-        if key == 27:
-            break
-        elif key == ord('w'):
-            tello.move_forward(30)
-        elif key == ord('s'):
-            tello.move_back(30)
-        elif key == ord('a'):
-            tello.move_left(30)
-        elif key == ord('d'):
-            tello.move_right(30)
-        elif key == ord('e'):
-            tello.rotate_clockwise(30)
-        elif key == ord('q'):
-            tello.rotate_counter_clockwise(30)
-        elif key == ord('r'):
-            tello.move_up(30)
-        elif key == ord('f'):
-            tello.move_down(30)
-            '''
+        #cv.imshow('XXKD\'s DoDrone', debug_image)
 
     tello.land()
     tello.end()
@@ -252,5 +221,7 @@ def index():
 
 if __name__ == '__main__':
     # in web
-    application.run(host='0.0.0.0', port=2204, debug=False)
+    #application.run(host='127.0.0.1', port=2204, debug=False)
+    #for release
+    application.run(host='0.0.0.0', debug=False)
     #main()
