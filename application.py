@@ -67,7 +67,8 @@ def main():
 
     # Argument parsing
     args = get_args()
-    KEYBOARD_CONTROL = args.is_keyboard
+    #KEYBOARD_CONTROL = args.is_keyboard
+    KEYBOARD_CONTROL = False
     WRITE_CONTROL = False
     in_flight = False
 
@@ -173,9 +174,9 @@ def main():
         debug_image = gesture_detector.draw_info(debug_image, fps, mode, number)
 
         #in web
-        if not success:
-            break
-        else:
+        #if not success:
+        #    break
+        #else:
             # Battery status and image rendering
             #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
@@ -185,11 +186,11 @@ def main():
             #cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
                    #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
-            ret, buffer = cv.imencode('.jpg', debug_image)
-            debug_image = buffer.tobytes()
-            cv.imshow('Tello Gesture Recognition', debug_image)
+            #ret, buffer = cv.imencode('.jpg', debug_image)
+            #debug_image = buffer.tobytes()
+            #cv.imshow('Tello Gesture Recognition', debug_image)
 
-        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
         #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
                    #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
@@ -197,6 +198,11 @@ def main():
                    #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
         #cv.imshow('Tello Gesture Recognition', debug_image)
+        #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
+        cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
+                   cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+
+        cv.imshow('XXKD\'s DoDrone', debug_image)
     
     '''
     tello.takeoff()
