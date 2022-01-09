@@ -67,7 +67,8 @@ def main():
 
     # Argument parsing
     args = get_args()
-    KEYBOARD_CONTROL = args.is_keyboard
+    #KEYBOARD_CONTROL = args.is_keyboard
+    KEYBOARD_CONTROL = False
     WRITE_CONTROL = False
     in_flight = False
 
@@ -186,12 +187,9 @@ def main():
 
         #yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
         cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
-                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+                   cv.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
 
-        cv.putText(debug_image, "Speed: {}".format(tello.get_speed_x()), (5, 720 - 40),
-                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-
-        cv.imshow('Tello Gesture Recognition', debug_image)
+        cv.imshow('XXKD\'s DoDrone', debug_image)
     
     '''
     tello.takeoff()
