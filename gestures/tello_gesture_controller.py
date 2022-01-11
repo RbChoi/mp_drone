@@ -14,8 +14,7 @@ class TelloGestureController:
     def gesture_control(self, gesture_buffer):
         gesture_id = gesture_buffer.get_gesture()
         print("GESTURE", gesture_id)
-
-
+   
         #if gesture_id == 2:
             #self.up_down_velocity = 25
             #self.tello.move_up(30)

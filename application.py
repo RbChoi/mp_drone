@@ -221,7 +221,7 @@ def index():
 
 if __name__ == '__main__':
     # in web
-    #application.run(host='127.0.0.1', port=2204, debug=False)
+    application.run(host='127.0.0.1', port=2204, debug=False)
     #for release
-    application.run(host='0.0.0.0', debug=False)
+    #application.run(host='0.0.0.0', debug=False)
     #main()
