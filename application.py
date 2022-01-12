@@ -11,14 +11,14 @@ from gestures.tello_gesture_controller import TelloGestureController
 from gestures.tello_keyboard_controller import TelloKeyboardController
 from utils import CvFpsCalc
 
-from djitellopy import Tello
+#from djitellopy import Tello
 #from gestures import *
 
 import threading
+import socket
 
 application = Flask(__name__)
 CORS(application)
-
 
 def get_args():
     print('## Reading configuration ##')
@@ -60,6 +60,7 @@ def select_mode(key, mode):
 
 @application.route('/main')
 def main():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     # init global vars
     global gesture_buffer
     global gesture_id
@@ -73,9 +74,9 @@ def main():
     in_flight = False
 
     # Camera preparation
-    tello = Tello()
-    tello.connect()
-    tello.streamon()
+    #tello = Tello()
+    #tello.connect()
+    #tello.streamon()
     
     # for test
     # success
@@ -86,11 +87,13 @@ def main():
     #tello.land()
 
     #cap = tello.get_frame_read()
-    cap = cv.VideoCapture("udp://@0.0.0.0:11111")
+    #로컬 웹캠
+    cap = cv.VideoCapture(0)
+    #cap = cv.VideoCapture("udp://@0.0.0.0:11111")
 
     # Init Tello Controllers
-    gesture_controller = TelloGestureController(tello)
-    keyboard_controller = TelloKeyboardController(tello)
+    #gesture_controller = TelloGestureController(tello)
+    #keyboard_controller = TelloKeyboardController(tello)
 
     gesture_detector = GestureRecognition(args.use_static_image_mode, args.min_detection_confidence,
                                           args.min_tracking_confidence)
@@ -118,7 +121,6 @@ def main():
     mode = 0
     number = -1
     battery_status = -1
-    speed_status = -1
 
     #tello.takeoff()
     
@@ -133,19 +135,19 @@ def main():
         elif key == 32:  # Space
             if not in_flight:
                 # Take-off drone
-                tello.takeoff()
+                #tello.takeoff()
                 in_flight = True
 
             elif in_flight:
                 # Land tello
-                tello.land()
+                #tello.land()
                 in_flight = False
 
         elif key == ord('k'):
             mode = 0
             KEYBOARD_CONTROL = True
             WRITE_CONTROL = False
-            tello.send_rc_control(0, 0, 0, 0)  # Stop moving
+            #tello.send_rc_control(0, 0, 0, 0)  # Stop moving
         elif key == ord('g'):
             KEYBOARD_CONTROL = False
         elif key == ord('n'):
@@ -168,8 +170,8 @@ def main():
         gesture_buffer.add_gesture(gesture_id)
 
         # Start control thread
-        threading.Thread(target=tello_control, args=(key, keyboard_controller, gesture_controller,)).start()
-        threading.Thread(target=tello_battery, args=(tello,)).start()
+        #threading.Thread(target=tello_control, args=(key, keyboard_controller, gesture_controller,)).start()
+        #threading.Thread(target=tello_battery, args=(tello,)).start()
 
         debug_image = gesture_detector.draw_info(debug_image, fps, mode, number)
 
@@ -180,13 +182,30 @@ def main():
             # Battery status and image rendering
             
 
-            cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
-                   cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            #cv.putText(debug_image, "Battery: {}".format(battery_status), (5, 720 - 5),
+                   #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
 
             ret, buffer = cv.imencode('.jpg', debug_image)
             debug_image = buffer.tobytes()
             #cv.imshow('Tello Gesture Recognition', debug_image)
-
+        '''
+        if(gesture_id == 0) : # forward
+            sock.sendto("G".encode(), ('192.168.129.107', 1234))
+        elif (gesture_id == 1): # stop
+            sock.sendto("A".encode(), ('192.168.129.107', 1234))
+        elif(gesture_id == 2) : #up
+            sock.sendto("B".encode(), ('192.168.129.107', 1234))
+        elif (gesture_id == 3):  # land
+            sock.sendto("H".encode(), ('192.168.129.107', 1234))
+        elif (gesture_id == 4):  # down
+            sock.sendto("D".encode(), ('192.168.129.107', 1234))
+        elif (gesture_id == 5):  # back
+            sock.sendto("C".encode(), ('192.168.129.107', 1234))
+        elif (gesture_id == 6):  # left
+            sock.sendto("F".encode(), ('192.168.129.107', 1234))
+        elif (gesture_id == 7):  # right
+            sock.sendto("E".encode(), ('192.168.129.107', 1234))
+        '''
         yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + debug_image + b'\r\n')
         #cv.putText(debug_image, "Battery: {}".format(tello.get_battery()), (5, 720 - 5),
                    #cv.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
@@ -201,11 +220,10 @@ def main():
 
         #cv.imshow('XXKD\'s DoDrone', debug_image)
 
-    tello.land()
-    tello.end()
+    #tello.land()
+    #tello.end()
     cv.destroyAllWindows()
     return 'OK'
-
 
 #in web
 @application.route('/video')
