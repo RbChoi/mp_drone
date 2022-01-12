@@ -15,15 +15,10 @@ class TelloGestureController:
         gesture_id = gesture_buffer.get_gesture()
         print("GESTURE", gesture_id)
 
-
-        #if gesture_id == 2:
-            #self.up_down_velocity = 25
-            #self.tello.move_up(30)
-
         if not self._is_landing:
-            if gesture_id == 0:  # Forward
+            if gesture_id == 1:  # Forward
                 self.forw_back_velocity = 30
-            elif gesture_id == 1:  # STOP
+            elif gesture_id == 0:  # STOP
                 self.forw_back_velocity = self.up_down_velocity = \
                     self.left_right_velocity = self.yaw_velocity = 0
             if gesture_id == 5:  # Back
