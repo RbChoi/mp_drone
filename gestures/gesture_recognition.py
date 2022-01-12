@@ -464,8 +464,11 @@ class GestureRecognition:
 
         info_text = handedness.classification[0].label[0:]
         if hand_sign_text != "":
+            if hand_sign_text == "Forward" :
+                hand_sign_text = "Stop"
+            elif hand_sign_text == "Stop" :
+                hand_sign_text = "Forward"
             info_text = info_text + ':' + hand_sign_text
-            #print("output: " + hand_sign_text)
         cv.putText(image, info_text, (brect[0] + 5, brect[1] - 4),
                    cv.FONT_HERSHEY_DUPLEX, 0.6, (255, 255, 255), 1, cv.LINE_AA)
 
